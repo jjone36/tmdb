@@ -1,31 +1,10 @@
 import pandas as pd
 import numpy as np
 
-import ast
-from datetime import date
+tr = pd.read_csv('data/train_num.csv')
+te = pd.read_csv('data/test_num.csv')
 
-# Import the data
-tr = pd.read_csv('data/train.csv')
-te = pd.read_csv('data/test.csv')
-
-# Data overview
-print("Data types : \n" , tr.info())
-print("\nUnique values :  \n", tr.nunique())
-print("\nMissing values :  ", tr.isnull().sum())
-
-# Data overview
-print("Data types : \n" , te.info())
-print("\nUnique values :  \n", te.nunique())
-print("\nMissing values :  ", te.isnull().sum())
-
-# Separate categorical & numerical features
-cat_feats = tr.columns[tr.dtypes == 'object']
-num_feats = tr.columns[tr.dtypes != 'object']
-print("Numeric variables ", len(num_feats))
-print(num_feats.get_values())
-print("Categorical variables : ", len(cat_feats))
-print(cat_feats.get_values())
-
+# Budget & Revenue
 # Cleaning- Budget, Revenue in train set
 tr.loc[tr['id'] == 16,'revenue'] = 192864          # Skinning
 tr.loc[tr['id'] == 90,'budget'] = 30000000         # Sommersby
@@ -170,147 +149,21 @@ te.loc[te['id'] == 6473,'budget'] = 100
 te.loc[te['id'] == 6842,'budget'] = 30
 
 
-# Separate categorical & numerical features
-tr_cat = tr[cat_feats]
-tr_num = tr[num_feats]
+# Runtime
+tr['runtime_h'], tr['runtime_m'] = tr.runtime // 60, tr.runtime % 60
+te['runtime_h'], te['runtime_m'] = te.runtime // 60, te.runtime % 60
 
-te_cat = te[cat_feats]
-te_num = te[num_feats[:-1]]
+# Normalization
+tr['revenue_log'] = np.log1p(tr.revenue)
 
-# Preprocessing - numeric feature
-cut = len(tr)
-df_num = pd.concat([tr_num, te_num], axis = 0).reset_index(drop = True)
+tr['runtime_log']= np.log1p(tr.runtime)
+tr['budget_log'] = np.log1p(tr.budget)
+tr['popularity_log']= np.log1p(tr.popularity)
 
-# runtime
-df_num['runtime_h'], df_num['runtime_m'] = df_num.runtime // 60, df_num.runtime % 60
+te['runtime_log']= np.log1p(te.runtime)
+te['budget_log'] = np.log1p(te.budget)
+te['popularity_log']= np.log1p(te.popularity)
 
-# scaling
-df_num['revenue_log'] = np.log1p(df_num.revenue)
-df_num['runtime_log']= np.log1p(tr_num.runtime)
-df_num['budget_log'] = np.log1p(df_num.budget)
-df_num['popularity_log']= np.log1p(df_num.popularity)
-
-
-# Preprocessing - categorical feature
-# Concat train and test set
-df_cat = pd.concat([tr_cat, te_cat], axis = 0).reset_index(drop = True)
-
-# belongs to collection
-df_cat['is_collection'] = df_cat.belongs_to_collection.notnull()
-
-# release_date
-df_cat.release_date[3828] = '10/12/01'
-
-def fix_year(row):
-    a = int(row.split('/')[2])
-    if a <= 19:
-        a += 2000
-    else:
-        a += 1900
-    return a
-
-df_cat['year'] = df_cat.release_date.map(lambda row: fix_year(row))
-df_cat['month'] = df_cat.release_date.map(lambda row: row.split('/')[0])
-df_cat['day'] = df_cat.release_date.map(lambda row: row.split('/')[1])
-
-df_cat['release_date'] = pd.to_datetime({'year': df_cat.year,
-                                        'month': df_cat.month,
-                                        'day': df_cat.day})
-
-df_cat['weekofday'] = df_cat.release_date.dt.dayofweek
-df_cat['quarter'] = df_cat.release_date.dt.quarter
-
-# dictionary form features
-def list_to_dict(row, a):
-    # Convert to dict
-    dict_list = ast.literal_eval(row)
-    temp = ''
-    for d in dict_list:
-        if(a in d.keys()):
-            temp += d[a] + ';'
-    return temp
-
-def dict_to_col(col, key_name):
-    # Fill NAs
-    df_cat[col] = df_cat[col].fillna('[{}]')
-    # Get the element list
-    df_cat[col] = df_cat[col].apply(lambda row: list_to_dict(row, key_name))
-    # The number of elements
-    df_cat['n_'+col] = df_cat[col].apply(lambda row: len(row.split(';')) - 1)
-
-
-# genres
-dict_to_col('genres', 'name')
-
-df_cat.loc[:, ['title', 'release_date']][df_cat.genres == '']
-df_cat.genres[470] = 'Adventure;'
-df_cat.genres[1622] = 'Drama;Comedy;'
-df_cat.genres[1814] = 'Comedy;'
-df_cat.genres[1819] = 'Romance;Drama;'
-df_cat.genres[2423] = 'Action;Drama;Romance;'
-df_cat.genres[2686] = 'Thriller;'
-df_cat.genres[2900] = 'Drama;Fantasy;Mystery;'
-df_cat.genres[3073] = 'Drama;Fantasy;Mystery;'
-df_cat.genres[3793] = 'Drama;Romance;'
-df_cat.genres[3910] = 'Adventure;Biography;Drama;'
-df_cat.genres[4221] = 'Action;Crime;Drama;'
-df_cat.genres[4442] = 'Drama;'
-df_cat.genres[4615] = 'Comedy;'
-df_cat.genres[4964] = 'Action;Crime;'
-df_cat.genres[5062] = 'Action;Drama;'
-df_cat.genres[5118] = 'Drama;'
-df_cat.genres[5213] = 'Documentary;Biography;Family;'
-df_cat.genres[5251] = 'Comedy;'
-df_cat.genres[5519] = 'Comedy;Crime;Mystery;'
-df_cat.genres[6449] = 'Comedy;Crime;Drama;'
-df_cat.genres[6485] = 'Musical;Comedy;'
-df_cat.genres[6564] = 'Documentary;Drama;War;'
-df_cat.genres[6817] = 'Drama;'
-
-
-# spoken_languages
-dict_to_col('spoken_languages', 'iso_639_1')
-
-# production_companies, production_countries
-dict_to_col('production_companies', 'name')
-dict_to_col('production_countries', 'iso_3166_1')
-
-# cast
-dict_to_col('cast', 'name')
-
-# crew
-# Fill NAs
-df_cat['crew'] = df_cat['crew'].fillna('[{}]')
-# Get the list of crew jobs
-df_cat['crew_job'] = df_cat.crew.apply(lambda row: list_to_dict(row, 'job'))
-# Get the number of elements
-df_cat['n_crew_job'] = df_cat.crew_job.apply(lambda row: len(row.split(';')) -1)
-
-#### DO MORE ANALYSIS HERE ####
-
-# Keywords
-dict_to_col('Keywords', 'name')
-# Separate text columns
-text_feats = ['Keywords', 'original_title', 'overview', 'tagline']
-df_text = df_cat.loc[:, text_feats]
-
-#### DO MORE ANALYSIS HERE ####
-
-
-drop_feats = ['belongs_to_collection', 'homepage', 'poster_path', 'cast', 'crew']
-df_cat.drop(drop_feats, axis = 1, inplace=True)
-df_cat.drop(text_feats, axis = 1, inplace=True)
-
-
-# Save the file
-tr_num = df_num[:cut]
-te_num = df_num[cut:]
-
-tr_cat = df_cat[:cut]
-te_cat = df_cat[cut:]
-
-tr = pd.concat([tr_num, tr_cat], axis = 1)
-te = pd.concat([te_num, te_cat], axis = 1)
-
-tr.to_csv('data/tr_processed.csv', encoding = 'utf-8-sig', index = False)
-te.to_csv('data/te_processed.csv', encoding = 'utf-8-sig', index = False)
+# Save the files
+tr.to_csv('data/train_num.csv', encoding = 'utf-8-sig', index = False)
+te.to_csv('data/test_num.csv', encoding = 'utf-8-sig', index = False)
