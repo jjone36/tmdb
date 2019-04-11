@@ -115,7 +115,7 @@ dict_to_col('spoken_languages', 'iso_639_1')
 df_cat.loc[:, 'original_language'][df_cat.spoken_languages.isnull()]
 
 idx = df_cat[df_cat.spoken_languages.isnull()].index
-df_cat.spoken_languages[idx] = df_cat.original_language[idx]
+df_cat.spoken_languages[idx] = df_cat.original_language[idx] + ';'
 df_cat['n_spoken_lang'] = df_cat.spoken_languages.apply(lambda row: row.count(';'))
 
 
