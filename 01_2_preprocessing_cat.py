@@ -181,7 +181,7 @@ df_text.to_csv('data/tr_te_text.csv', encoding = 'utf-8-sig', index = False)
 
 
 # drop the features
-drop_feats = ['belongs_to_collection', 'imdb_id', 'homepage', 'poster_path', 'cast', 'crew', 'revenue']
+drop_feats = ['belongs_to_collection', 'imdb_id', 'homepage', 'poster_path', 'cast', 'crew']
 df_cat.drop(drop_feats, axis = 1, inplace=True)
 df_cat.drop(text_feats, axis = 1, inplace=True)
 
