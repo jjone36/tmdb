@@ -50,7 +50,7 @@ df_cat['n_crew_job_log'] = np.log1p(df_cat.n_crew_job)
 
 # Drop features
 drop_feats = ['genres', 'imdb_id', 'production_companies', 'revenue', 'crew_job', 'spoken_languages',
-              'n_cast', 'n_crew', 'n_crew_job']
+              'release_date', 'n_cast', 'n_crew', 'n_crew_job']
 df_cat.drop(drop_feats, axis = 1, inplace = True)
 
 # Combine the train set

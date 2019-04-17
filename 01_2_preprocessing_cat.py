@@ -93,7 +93,7 @@ def to_iso(row):
 
 
 # fill the NAs in production_countries
-idx = df_cat[df_cat.production_countries.isnull()].index
+idx = df_cat[df_cat.production_countries.map(lambda row: len(row)) < 3].index
 df_cat.production_countries[idx] = df_cat.imdb_id[idx].map(lambda row: get_country(row))
 
 # convert the country name as iso_code
@@ -112,9 +112,7 @@ df_cat['n_prod_count'] = df_cat.production_countries.apply(lambda row: row.count
 dict_to_col('spoken_languages', 'iso_639_1')
 
 # filling the missing values in n_spoken_languages
-df_cat.loc[:, 'original_language'][df_cat.spoken_languages.isnull()]
-
-idx = df_cat[df_cat.spoken_languages.isnull()].index
+idx = df_cat[df_cat.spoken_languages.map(lambda row: len(row) < 2)].index
 df_cat.spoken_languages[idx] = df_cat.original_language[idx] + ';'
 df_cat['n_spoken_lang'] = df_cat.spoken_languages.apply(lambda row: row.count(';'))
 
