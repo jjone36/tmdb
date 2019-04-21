@@ -1,5 +1,6 @@
 data/
 backup/
 
-02_eda.ipynb
+02_eda.html
+preprocessing.txt
 .ipynb_checkpoints/

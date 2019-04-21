@@ -188,5 +188,5 @@ tr_cat = df_cat[:cut]
 te_cat = df_cat[cut:]
 
 
-tr_cat.to_csv('data/train_cat.csv', encoding = 'utf-8-sig', index = False)
-te_cat.to_csv('data/test_cat.csv', encoding = 'utf-8-sig', index = False)
+tr_cat.to_csv('data/train_cat_p.csv', encoding = 'utf-8-sig', index = False)
+te_cat.to_csv('data/test_cat_p.csv', encoding = 'utf-8-sig', index = False)

@@ -150,6 +150,8 @@ te.loc[te['id'] == 6842,'budget'] = 30
 
 
 # Runtime
+tr.runtime.fillna(0, inplace = True)
+te.runtime.fillna(0, inplace = True)
 tr['runtime_h'], tr['runtime_m'] = tr.runtime // 60, tr.runtime % 60
 te['runtime_h'], te['runtime_m'] = te.runtime // 60, te.runtime % 60
 
@@ -165,5 +167,5 @@ te['budget_log'] = np.log1p(te.budget)
 te['popularity_log']= np.log1p(te.popularity)
 
 # Save the files
-tr.to_csv('data/train_num.csv', encoding = 'utf-8-sig', index = False)
-te.to_csv('data/test_num.csv', encoding = 'utf-8-sig', index = False)
+tr.to_csv('data/train_num_p.csv', encoding = 'utf-8-sig', index = False)
+te.to_csv('data/test_num_p.csv', encoding = 'utf-8-sig', index = False)
