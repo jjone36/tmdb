@@ -53,8 +53,8 @@ X = mlb.fit_transform(df_cat.spoken_languages).astype('int')
 df_langs = pd.DataFrame(X, columns = 'spoken_lang_' + mlb.classes_)
 
 ## Combine the encoded data
-df_cat.reset_index(drop = True, inplace = True)
-df_cat = pd.concat([df_cat, df_genres, df_prod_count, df_langs], axis = 1)
+#df_cat.reset_index(drop = True, inplace = True)
+df_2 = pd.concat([df_genres, df_prod_count, df_langs], axis = 1)
 
 # n_cast, n_crew, n_crew_job
 df_cat['n_cast_log'] = np.log1p(df_cat.n_cast)
@@ -63,16 +63,20 @@ df_cat['n_crew_job_log'] = np.log1p(df_cat.n_crew_job)
 
 
 # Drop features
-drop_feats = ['genres', 'imdb_id', 'production_companies', 'production_countries', 'revenue', 'crew_job', 'spoken_languages',
-              'release_date', 'n_cast', 'n_crew', 'n_crew_job']
+drop_feats = ['genres', 'production_companies', 'production_countries', 'revenue', 'crew_job',
+              'spoken_languages', 'original_languages', 'release_date', 'n_cast', 'n_crew', 'n_crew_job']
 df_cat.drop(drop_feats, axis = 1, inplace = True)
 
 # Combine the train set
 tr_cat = df_cat[:cut]
 te_cat = df_cat[cut:]
 
-tr = pd.concat([tr_num, tr_cat], axis = 1)
-te = pd.concat([te_num, te_cat], axis = 1)
+tr_cat_2 = df_2[:cut]
+te_cat_2 = df_2[cut:]
+te_cat_2.reset_index(drop = True, inplace = True)
+
+tr = pd.concat([tr_num, tr_cat, tr_cat_2], axis = 1)
+te = pd.concat([te_num, te_cat, te_cat_2], axis = 1)
 
 # Save the files
 tr.to_csv('data/train_2.csv', index = False)
