@@ -75,8 +75,7 @@ df_cat.genres[6817] = 'Drama;'
 df_cat['n_genres'] = df_cat.genres.apply(lambda row: row.count(';'))
 
 
-##### production_companies, production_countries
-dict_to_col('production_companies', 'name')
+##### production_countries
 dict_to_col('production_countries', 'iso_3166_1')
 
 # filling the missing production countries
@@ -104,8 +103,32 @@ mydict['South Korea'] = 'KR'
 
 df_cat.production_countries[idx] = df_cat.production_countries[idx].map(lambda row: to_iso(row))
 
-df_cat['n_prod_comp'] = df_cat.production_companies.apply(lambda row: row.count(';'))
+# the number of countries
 df_cat['n_prod_count'] = df_cat.production_countries.apply(lambda row: row.count(';'))
+
+
+##### production_companies
+dict_to_col('production_companies', 'name')
+
+# filling the missing production companies
+def get_company(row):
+    a = row[2:]
+    try:
+        companies = ia.get_movie(a)['production companies']
+        temp = ''
+        for c in companies:
+            temp += str(c) + ';'
+    except:
+        temp = 'No info'
+    return temp
+
+# fill the NAs in production_companies
+idx = df_cat[df_cat.production_companies.map(lambda row: len(row)) < 3].index
+df_cat.production_companies[idx] = df_cat.imdb_id[idx].apply(lambda row: get_company(row))
+(df_cat.production_companies == 'No info').sum()
+
+# The number of companies
+df_cat['n_prod_comp'] = df_cat.production_companies.apply(lambda row: row.count(';'))
 
 
 ##### original_language, spoken_languages
@@ -118,30 +141,78 @@ df_cat['n_spoken_lang'] = df_cat.spoken_languages.apply(lambda row: row.count(';
 
 
 ##### cast
+# Gender counter
+def gender_counter(row):
+    dict_list = ast.literal_eval(row)
+    male = 0
+    female = 0
+    neutral = 0
+    for d in dict_list:
+        if ('gender' in d.keys()):
+            if d['gender'] == 0:
+                female += 1
+            elif d['gender'] == 1:
+                male += 1
+            else:
+                neutral += 1
+    return str(male) + ';' + str(female) + ';' + str(neutral)
+
+df_cat['cast'] = df_cat['cast'].fillna('[{}]')
+df_cat['cast_gender'] = df_cat.cast.apply(lambda row: gender_counter(row))
+
+df_cat['cast_male'] = df_cat.cast_gender.apply(lambda row: int(row.split(';')[0]))
+df_cat['cast_female'] = df_cat.cast_gender.apply(lambda row: int(row.split(';')[1]))
+df_cat['cast_neutral'] = df_cat.cast_gender.apply(lambda row: int(row.split(';')[2]))
+
+# Get the name list of the casts
 dict_to_col('cast', 'name')
-
 df_cat.cast[df_cat.cast.isnull()] = 'No Info'
+# The number of casts
 df_cat['n_cast'] = df_cat.cast.apply(lambda row: row.count(';'))
-
+# Gender ratio
+#df_cat['cast_ratio'] = df_cat.cast_male / df_cat.n_cast
 
 ##### crew
 # Fill NAs
-df_cat['crew'] = df_cat['crew'].fillna('[{}]')
+df_cat['crew'] = df_cat['crew'].fillna('[{"profile_path": None}]')
 
 # Get the list of crew jobs
 df_cat['crew_job'] = df_cat.crew.apply(lambda row: list_to_dict(row, 'job'))
 
-# Get the number of elements
-df_cat['n_crew'] = df_cat.crew_job.apply(lambda row: row.count(';'))
-
-# Get the number of cast types
-def job_counter(row):
+# Get the number of crew job types
+def counter(row):
     job_counts = Counter(row.split(';')[:-1])
     return len(job_counts)
 
-df_cat['n_crew_job'] = df_cat.crew_job.apply(lambda row: job_counter(row))
+df_cat['n_crew_job'] = df_cat.crew_job.apply(lambda row: counter(row))
+
+# Get the number of crews
+df_cat['n_crew'] = df_cat.crew_job.apply(lambda row: row.count(';'))
 
 #### DO MORE ANALYSIS HERE ####
+# The list of crew departments
+df_cat['crew_department'] = df_cat.crew.apply(lambda row: list_to_dict(row, 'department'))
+df_cat['n_crew_department'] = df_cat.crew_department.apply(lambda row: counter(row))
+
+# The ratio of gender
+df_cat['crew_gender'] = df_cat.crew.apply(lambda row: gender_counter(row))
+
+df_cat['crew_male'] = df_cat.crew_gender.apply(lambda row: int(row.split(';')[0]))
+df_cat['crew_female'] = df_cat.crew_gender.apply(lambda row: int(row.split(';')[1]))
+df_cat['crew_neutral'] = df_cat.crew_gender.apply(lambda row: int(row.split(';')[2]))
+#df_cat['crew_ratio'] = df_cat.crew_male / df_cat.n_crew
+
+# The number of crews with profile_path
+def profile_counter(row):
+    dict_list = ast.literal_eval(row)
+    temp = 0
+    for d in dict_list:
+        if ('profile_path' in d.keys()) & (d['profile_path'] != None):
+            temp += 1
+    return temp
+
+df_cat['n_crew_profile'] = df_cat.crew.apply(lambda row: profile_counter(row))
+
 
 
 ##### release_date
