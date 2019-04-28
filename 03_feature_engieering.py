@@ -55,11 +55,14 @@ df_cat['production_companies'] = df_cat.production_companies.map(lambda row: row
 X = mlb.fit_transform(df_cat.production_companies).astype('int')
 df_prod_comp = pd.DataFrame(X, columns ='prod_count_' + mlb.classes_)
 
+sub = df_prod_comp[:cut]
+sub['revenue_log'] = tr_num.revenue_log
+
 # take only top 100 companies with significant gap in revenue
 dict_comp = {}
-for col in df_prod_comp.columns:
-    a = df_prod_comp.revenue_log[df_prod_comp[col] == 0].median()
-    b = df_prod_comp.revenue_log[df_prod_comp[col] == 1].median()
+for col in sub.columns:
+    a = sub.revenue_log[sub[col] == 0].median()
+    b = sub.revenue_log[sub[col] == 1].median()
     gap = np.abs(a-b)
     dict_comp[col] = gap
 
@@ -105,7 +108,7 @@ df_cat.n_crew_profile[df_cat.n_crew_profile.isnull()] = 0
 df_cat['n_crew_profile'] /= df_cat.n_crew
 
 # Drop features
-drop_feats = ['genres', 'production_companies', 'production_countries', 'revenue', 'spoken_languages', 'original_languages', 'release_date',
+drop_feats = ['genres', 'production_companies', 'production_countries', 'revenue', 'spoken_languages', 'original_language', 'release_date',
               'n_cast', 'n_crew', 'crew_department',  'n_crew_department', 'crew_job', 'n_crew_job',
               'cast_gender', 'cast_female', 'cast_neutral', 'crew_gender', 'crew_female', 'crew_neutral']
 df_cat.drop(drop_feats, axis = 1, inplace = True)
