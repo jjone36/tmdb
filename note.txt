@@ -1,0 +1,44 @@
+# Numerical
+-revenue: revenue_log
+
+-budget: budget = 0??? / budget_log
+
+-popularity: popularity_log
+
+-runtime: runtime_log / runtime_h, scale(runtime_m)
+
+
+# Categorical
+-genres: OneHotEncoder / n_genres
+
+-original_language: LabelEncoder
+
+-production_countries: OneHotEncoder / n_prod_count
+
+-release_date: year, month, day, weekofday, quarter
+
+-spoken_languages: OneHotEncoder / n_spoken_lang
+
+-status: LabelEncoder
+
+-is_collection: LabelEncoder
+
+-is_homepage: LabelEncoder
+
+-production_companies: LabelEncoder / n_prod_comp
+
+-cast_gender & crew_gender -> crew_male only
+
+-crew_department: LabelEncoder   ### crew_jobs?
+
+-n_cast, n_crew, n_crew_profile
+
+
+# Next Trial
+-Kfold validation
+-set_seed
+-dimension reduction + linear model
+
+-Residual-based Stacking
+
+-feature_importance, Scaling >> Final stacking
