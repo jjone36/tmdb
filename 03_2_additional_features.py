@@ -94,14 +94,15 @@ df_all = pd.concat([df, df_genres, df_prod_count, df_prod_comp, df_langs, df_cre
 
 # Drop features
 drop_feats = ['genres', 'production_companies', 'production_countries', 'spoken_languages', 'original_language',
-              'id', 'imdb_id', 'title', 'runtime', 'revenue', 'revenue.1', 'release_date', 'year_diff', 'quarter', 'budget', 'popularity',
+              'id', 'imdb_id', 'runtime', 'revenue', 'revenue.1', 'popularity', 'popularity2', 'totalVotes',
+              'release_date', 'year_diff', 'quarter', 'budget',
               'n_cast', 'cast_gender', 'cast_female', 'cast_neutral',
               'n_crew', 'n_crew_department', 'crew_department',  'crew_job', 'n_crew_job', 'crew_gender', 'crew_female', 'crew_neutral']
 
 df_all.drop(drop_feats, axis = 1, inplace = True)
 
-#print(df_all.iloc[:, :70].info())
-
+print("============Final Column list (without multi-labels)============")
+print(df_all.columns[:70])
 
 tr = df_all[:cut]
 te = df_all[cut:]
@@ -118,10 +119,10 @@ df_prod_comp = dims_reductor(df_prod_comp, 'prod_comp', 10)
 df_langs = dims_reductor(df_langs, 'langs', 10)
 df_crew_dep = dims_reductor(df_crew_dep, 'crew_dep', 5)
 
-df_all2 = pd.concat([df_all, df_genres, df_prod_count, df_prod_comp, df_langs, df_crew_dep], axis = 1)
+df_all = pd.concat([df, df_genres, df_prod_count, df_prod_comp, df_langs, df_crew_dep], axis = 1)
 
-tr = df_all2[:cut]
-te = df_all2[cut:]
+tr = df[:cut]
+te = df[cut:]
 tr['revenue_log'] = y
 
 tr.to_csv('data/train_3_svd.csv', index = False)

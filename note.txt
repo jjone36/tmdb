@@ -35,10 +35,5 @@
 
 
 # Next Trial
--Kfold validation
--set_seed
--dimension reduction + linear model
-
 -Residual-based Stacking
-
--feature_importance, Scaling >> Final stacking
+-feature_importance, set_seed, Scaling >> Final stacking
