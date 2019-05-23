@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
 
-tr = pd.read_csv('data/train_num.csv')
-te = pd.read_csv('data/test_num.csv')
+dir = '../'
+tr = pd.read_csv(dir + 'data/train_num.csv')
+te = pd.read_csv(dir + 'data/test_num.csv')
 
 # Budget & Revenue
 # Cleaning- Budget, Revenue in train set
@@ -167,5 +168,5 @@ te['budget_log'] = np.log1p(te.budget)
 te['popularity_log']= np.log1p(te.popularity)
 
 # Save the files
-tr.to_csv('data/train_num_p.csv', encoding = 'utf-8-sig', index = False)
-te.to_csv('data/test_num_p.csv', encoding = 'utf-8-sig', index = False)
+tr.to_csv(dir + 'data/train_num_p.csv', encoding = 'utf-8-sig', index = False)
+te.to_csv(dir + 'data/test_num_p.csv', encoding = 'utf-8-sig', index = False)

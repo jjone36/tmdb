@@ -1,2 +1,2 @@
-# imdb
-imdb movie prediction (Kaggle)
+# TMDB
+TMDB movie prediction (Kaggle)

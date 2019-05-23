@@ -13,10 +13,10 @@ def dims_reductor(df, colname, a):
     df.columns = [colname + '_' + str(i) for i in range(len(df.columns))]
     return df
 
-
+dir = '../'
 # Load the data
-tr = pd.read_csv('data/train_2.csv')
-te = pd.read_csv('data/test_2.csv')
+tr = pd.read_csv(dir + 'data/train_2.csv')
+te = pd.read_csv(dir + 'data/test_2.csv')
 
 y = tr.revenue_log
 tr.drop('revenue_log', axis = 1, inplace = True)
@@ -108,22 +108,22 @@ tr = df_all[:cut]
 te = df_all[cut:]
 tr['revenue_log'] = y
 
-tr.to_csv('data/train_3.csv', index = False)
-te.to_csv('data/test_3.csv', index = False)
+tr.to_csv(dir + 'data/train_3.csv', index = False)
+te.to_csv(dir + 'data/test_3.csv', index = False)
 
 
 # Dimension Reduction
-df_genres = dims_reductor(df_genres, 'genres',5)
-df_prod_count = dims_reductor(df_prod_count, 'prod_count', 10)
-df_prod_comp = dims_reductor(df_prod_comp, 'prod_comp', 10)
-df_langs = dims_reductor(df_langs, 'langs', 10)
-df_crew_dep = dims_reductor(df_crew_dep, 'crew_dep', 5)
+#df_genres = dims_reductor(df_genres, 'genres',5)
+#df_prod_count = dims_reductor(df_prod_count, 'prod_count', 10)
+#df_prod_comp = dims_reductor(df_prod_comp, 'prod_comp', 10)
+#df_langs = dims_reductor(df_langs, 'langs', 10)
+#df_crew_dep = dims_reductor(df_crew_dep, 'crew_dep', 5)
 
-df_all = pd.concat([df, df_genres, df_prod_count, df_prod_comp, df_langs, df_crew_dep], axis = 1)
+#df_all = pd.concat([df, df_genres, df_prod_count, df_prod_comp, df_langs, df_crew_dep], axis = 1)
 
-tr = df[:cut]
-te = df[cut:]
-tr['revenue_log'] = y
+#tr = df[:cut]
+#te = df[cut:]
+#tr['revenue_log'] = y
 
-tr.to_csv('data/train_3_svd.csv', index = False)
-te.to_csv('data/test_3_svd.csv', index = False)
+#tr.to_csv('data/train_3_svd.csv', index = False)
+#te.to_csv('data/test_3_svd.csv', index = False)

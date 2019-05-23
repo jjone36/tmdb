@@ -26,10 +26,10 @@ def dict_to_col(col, key_name):
     # Get the element list
     df_cat[col] = df_cat[col].apply(lambda row: list_to_dict(row, key_name))
 
-
+dir = '../'
 # Import the categorical sub data
-tr = pd.read_csv('data/train_cat.csv')
-te = pd.read_csv('data/test_cat.csv')
+tr = pd.read_csv(dir + 'data/train_cat.csv')
+te = pd.read_csv(dir + 'data/test_cat.csv')
 
 # Concat train and test set
 cut = len(tr)
@@ -259,5 +259,5 @@ tr_cat = df_cat[:cut]
 te_cat = df_cat[cut:]
 
 
-tr_cat.to_csv('data/train_cat_p.csv', encoding = 'utf-8-sig', index = False)
-te_cat.to_csv('data/test_cat_p.csv', encoding = 'utf-8-sig', index = False)
+tr_cat.to_csv(dir + 'data/train_cat_p.csv', encoding = 'utf-8-sig', index = False)
+te_cat.to_csv(dir + 'data/test_cat_p.csv', encoding = 'utf-8-sig', index = False)
