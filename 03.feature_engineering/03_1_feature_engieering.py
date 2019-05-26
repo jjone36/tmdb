@@ -95,18 +95,18 @@ df['r_budget_runtime'] = df.budget / (df.runtime + 1)
 #df['r_popularity_Ncmp'] = df.popularity / (df.n_prod_comp + 1)
 
 # rating
-df['m_year_totalVotes'] = df.groupby("year")["totalVotes"].transform('mean')
-df['m_rating_totalVotes'] = df.groupby("rating")["totalVotes"].transform('mean')
+df['m_year_totalVotes'] = df.groupby("year")["totalVotes_log"].transform('mean')
+df['m_rating_totalVotes'] = df.groupby("rating")["totalVotes_log"].transform('mean')
 
-df['r_popularity_totalVotes'] = df['totalVotes']/df['popularity']
-df['r_budget_totalVotes'] = df['budget']/df['totalVotes']
+df['r_popularity_totalVotes'] = np.log1p(df['totalVotes']/df['popularity'])
+df['r_budget_totalVotes'] = df['budget']/(df['totalVotes'] + 1)
 
 #df['r_totalVotes_rating'] = df['totalVotes']/df['rating']
-df['r_budget_rating'] = df['budget']/df['rating']
-df['r_runtime_rating'] = df['runtime']/df['rating']
+df['r_budget_rating'] = df['budget']/(df['rating'] + .1)
+df['r_runtime_rating'] = df['runtime']/(df['rating'] + .1)
 
 df['r_totalVotes_year'] = df['totalVotes']/df['year']
-df['r_rating_popularity'] = df['rating']/df['popularity']
+#df['r_rating_popularity'] = df['rating']/df['popularity']
 
 ###################
 # text data

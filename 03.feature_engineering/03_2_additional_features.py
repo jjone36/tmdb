@@ -108,6 +108,9 @@ tr = df_all[:cut]
 te = df_all[cut:]
 tr['revenue_log'] = y
 
+print("The size of train set: ", tr.shape)
+print("The size of test set: ", te.shape)
+
 tr.to_csv(dir + 'data/train_3.csv', index = False)
 te.to_csv(dir + 'data/test_3.csv', index = False)
 
@@ -119,11 +122,14 @@ te.to_csv(dir + 'data/test_3.csv', index = False)
 #df_langs = dims_reductor(df_langs, 'langs', 10)
 #df_crew_dep = dims_reductor(df_crew_dep, 'crew_dep', 5)
 
-#df_all = pd.concat([df, df_genres, df_prod_count, df_prod_comp, df_langs, df_crew_dep], axis = 1)
+#df_all = pd.concat([df_all, df_genres, df_prod_count, df_prod_comp, df_langs, df_crew_dep], axis = 1)
 
-#tr = df[:cut]
-#te = df[cut:]
+#tr = df_all[:cut]
+#te = df_all[cut:]
 #tr['revenue_log'] = y
 
-#tr.to_csv('data/train_3_svd.csv', index = False)
-#te.to_csv('data/test_3_svd.csv', index = False)
+#print("The size of train set: ", tr.shape)
+#print("The size of test set: ", te.shape)
+
+#tr.to_csv(dir + 'data/train_3_svd.csv', index = False)
+#te.to_csv(dir + 'data/test_3_svd.csv', index = False)
