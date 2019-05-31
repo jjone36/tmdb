@@ -1,8 +1,6 @@
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 import pickle
 
 from sklearn.model_selection import train_test_split, KFold
@@ -12,8 +10,8 @@ from sklearn.linear_model import ElasticNet, LinearRegression
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR, LinearSVR
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
-from xgboost import XGBRegressor
-from catboost import CatBoostRegressor
+#from xgboost import XGBRegressor
+#from catboost import CatBoostRegressor
 from lightgbm.sklearn import LGBMRegressor
 
 import keras
@@ -100,7 +98,29 @@ cv = KFold(n_splits = k, shuffle = True, random_state = seed)
 
 
 ####################################################
-######### 1st layer
+######### 1st Layer (Residual weighted)
+####################################################
+model_cb = CatBoostRegressor(bagging_temperature = 0.3,
+                             colsample_bylevel = 0.7,
+                             depth = 9,
+                             early_stopping_rounds = 500,
+                             eval_metric = 'RMSE',
+                             iterations = 3000,
+                             learning_rate = .05,
+                             logging_level = 'Silent')
+kfold_validate(X, y, te, model_cb, 'cb2')
+
+meta_tr['org_y'] = y
+
+meta_tr['pred0'] = meta_tr.cb_2
+meta_te['pred0'] = meta_te.cb_2
+
+# Replace the y with the predicted values by the most accurate outcomes (cb_2)
+meta_tr['new_y'] = meta_tr.val - meta_tr.pred0
+y = meta_tr.new_y
+
+####################################################
+######### 2nd layer
 ####################################################
 # 1. Elastic Net
 model_el = ElasticNet(alpha = .005, l1_ratio = 0, max_iter = 5000)
@@ -115,12 +135,14 @@ kfold_validate(X, y, te, model_knn, 'knn')
 # 3. Random Forest
 model_rf = RandomForestRegressor(n_estimators = 3000,
                                  criterion = 'mse',
-                                 max_depth = 9)
+                                 max_depth = 7)
 kfold_validate(X, y, te, model_rf, 'rf')
 
 model_rf = RandomForestRegressor(n_estimators = 3000,
                                  criterion = 'mse',
-                                 max_depth = 11)
+                                 #min_samples_split = .7,
+                                 #min_samples_leaf = 100,
+                                 max_depth = 9)
 kfold_validate(X, y, te, model_rf, 'rf_2')
 
 
@@ -129,44 +151,7 @@ model_svm = SVR(kernel = 'rbf')
 kfold_validate(X, y, te, model_svm, 'svm')
 
 
-# 5. Xgboost
-model_xg = XGBRegressor(objective = 'reg:linear',
-                            n_estimators = 3000,
-                            max_depth = 11,
-                            learning_rate = 0.01,
-                            early_stopping_rounds = 500,
-                            gamma = 1.0,
-                            #alpha = .6,
-                            subsample = 0.7,
-                            colsample_bytree = 0.6,
-                            colsample_bylevel = 0.5,
-                            silent = True)
-kfold_validate(X, y, te, model_xg, 'xg')
-
-
-# 6. Catboost
-model_cb = CatBoostRegressor(bagging_temperature = 0.3,
-                             colsample_bylevel = 0.7,
-                             depth = 9,
-                             early_stopping_rounds = 500,
-                             eval_metric = 'RMSE',
-                             iterations = 3000,
-                             learning_rate = .01,
-                             logging_level = 'Silent')
-kfold_validate(X, y, te, model_cb, 'cb')
-
-model_cb = CatBoostRegressor(bagging_temperature = 0.3,
-                             colsample_bylevel = 0.7,
-                             depth = 9,
-                             early_stopping_rounds = 500,
-                             eval_metric = 'RMSE',
-                             iterations = 3000,
-                             learning_rate = .05,
-                             logging_level = 'Silent')
-kfold_validate(X, y, te, model_cb, 'cb2')
-
-
-# 7. LightGBM
+# 5. LightGBM
 params = {'objective' : 'regression',
           'num_iterations' : 5000,
           'max_depth' : 9,
@@ -200,16 +185,17 @@ for i, (tr_idx, val_idx) in enumerate(cv.split(X)):
     scores[i] = get_loss(pred_val, y_val)
     print("========={}-th Fold Score: {}".format(i, scores[i]))
 
-    meta_tr['lg'][val_idx] = pred_val
+    meta_tr['lg_2'][val_idx] = pred_val
 
 print("=========Total Score: ", np.mean(scores))
-meta_te['lg'] = model_lg.predict(te)
+meta_te['lg_2'] = model_lg.predict(te)
 
 
-# 8. Keras
+# 6. Keras
 # initialize the model
 model = Sequential()
 
+# create hidden layers
 model.add(Dense(input_dim = X.shape[1], output_dim = 128, activation = 'relu'))
 model.add(Dense(output_dim = 64, activation = 'relu'))
 #model.add(Dropout(.7))
@@ -227,6 +213,8 @@ model.compile(optimizer = Adam(lr=0.01),
 
 # early stopper
 early_stopper = EarlyStopping(patience = 5)
+
+model.summary()
 
 
 results = np.zeros((3000, 1))
@@ -257,19 +245,27 @@ model_ke.fit(X, y, batch_size = 100, nb_epoch = 100)
 meta_te['ke'] = model_ke.predict(te)
 
 
-#meta_tr.to_csv('meta_tr.csv', index = False)
-#meta_te.to_csv('meta_te.csv', index = False)
+# Add the orginal predicted values
+cols = ['el', 'knn', 'svm', 'rf', 'rf_2', 'lg', 'lg_2', 'ke']
+
+for col in cols:
+  meta_tr[col] += meta_tr.pred0
+  meta_te[col] += meta_te.pred0
+
+
+meta_tr.to_csv(dir + 'data/meta_tr_2.csv', index = False)
+meta_te.to_csv(dir + 'data/meta_te_2.csv', index = False)
 
 
 ####################################################
-######### 2nd layer
+######### 3rd layer
 ####################################################
 print("The size of the train set ", meta_tr.shape)
 print("The size of the test set ", meta_te.shape)
 
 y = meta_tr.org_y
-X = meta_tr.drop('org_y', axis = 1)
-te = meta_te
+X = meta_tr[cols]
+te = meta_te[cols]
 
 # Create meta-train set
 cols = ['lr', 'el', 'rd', 'svm', 'knn', 'rf']
@@ -328,56 +324,7 @@ kfold_validate(X_tr, y, te, model_rf, 'ad')    # 1.8474
 
 
 
-####################################################
-######### 3rd layer
-####################################################
-y = meta_tr.val
-X_tr = meta_tr.drop('val', axis = 1)
-te = meta_te
-
-# Create meta-train set
-cols = ['lr', 'rd', 'rf', 'rf2']
-
-nrow = X.shape[0]
-ncol = len(cols)
-dims = np.zeros((nrow, ncol))
-
-meta_tr = pd.DataFrame(dims, columns = cols)
-meta_tr['val'] = 0
-
-# Create meta-test set
-nrow = te.shape[0]
-dims = np.zeros((nrow, ncol))
-meta_te = pd.DataFrame(dims, columns = cols)
-
-# Cross Validation
-k = 3
-seed = 10
-cv = KFold(n_splits = k, shuffle = True, random_state = seed)
-
-# 1. Linear Regression
-model_lr = LinearRegression()
-kfold_validate(X_tr, y, te, model_lr, 'lr')    # 1.8417
-
-# 2. Ridge Regression
-model_rd = Ridge(alpha = .01, normalize = True)
-kfold_validate(X_tr, y, te, model_rd, 'rd')     # 1.8353
-
-# 3. Random Forest
-model_rf = RandomForestRegressor(n_estimators = 3000, max_depth = 3)
-kfold_validate(X_tr, y, te, model_rf, 'rf')     # 1.8246
-
-# 4. Random Forest
-model_rf = RandomForestRegressor(n_estimators = 2000, max_depth = 5)
-kfold_validate(X_tr, y, te, model_rf, 'rf2')    # 1.8149
-
-
-fig, axes = plt.subplots(1, 4, figsize = (12, 5))
-for i, col in enumerate(meta_tr.columns[meta_tr.columns != 'val']):
-  sns.regplot(x = col, y = 'val', data = meta_tr, ax = axes[i%4])
-
-
-final = meta_te.rd    # Final Submission
+final = (meta_te.lr + meta_te.el + meta_te.rd + meta_te.rf)/4
 
 # Submission
 sub = pd.read_csv(dir + 'data/sample_submission.csv')

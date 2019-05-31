@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 
 from sklearn.preprocessing import scale
+from imdb import IMDb
+ia = IMDb()
 
 dir = '../'
 # Import the all dataset
@@ -29,10 +31,23 @@ voting = pd.concat([tr2, te2], axis = 0)
 df = pd.merge(df, voting, how = 'left', on = 'imdb_id')
 df.reset_index(drop = True, inplace= True)
 
-# Fill NAs
-df['popularity2'] = df.popularity2.fillna(1)
-df['rating'] = df.rating.fillna(1)
-df['totalVotes'] = df.totalVotes.fillna(1)
+# Fill NAs in rating & totalVotes
+idx = df[df.rating.isnull()].index
+print("The number of missing values in ratings: ", len(idx))
+print("Filling...")
+
+for n, i in enumerate(idx):
+    num = df.imdb_id[i]
+    movie = ia.get_movie(num[2:])
+    df.loc[i, 'rating'] = movie['rating']
+    df.loc[i, 'totalVotes'] = movie['votes']
+
+    if n % 20 == 0:
+        print("======processed: %.2f"%(n/len(idx)))
+
+df['temp_'] = round(df.rating)
+df['temp_'] = df.groupby('temp_')['popularity'].transform('median')
+df.loc[idx, 'popularity2'] = df.temp_[idx]
 
 # The number of NAs
 df.isnull().sum()[df.isnull().sum() != 0]
@@ -57,56 +72,56 @@ df['n_crew_profile'] /= df.n_crew
 df['popularity2_log'] = np.log1p(df.popularity2)
 df['totalVotes_log'] = np.log1p(df.totalVotes)
 
-df.n_crew_profile = df.n_crew_profile.fillna(0)
-df['n_crew_profile'] /= df.n_crew
-
 # Mean Encoding
-# genres
-#df['md_ngenres_budget'] = df.groupby('n_genres')['budget'].transform('median')
-df['r_popularity_ngenres'] = df.popularity_log / df.n_genres
+df['popularity_diff_log'] = np.abs(df.popularity_log - df.popularity2_log)
+df['r_runtime_rating'] = df.runtime_m / (df.rating + .1)   #
+df['r_rating_totalVotes'] =  df.rating / df.totalVotes
+df['r_budget_rating'] = df.budget / (df.rating + .1)
 
-# year
+df['r_popularity_totalVotes'] = df.totalVotes_log - df.popularity_log
+#df['r_rating_popularity'] = df.rating / df.popularity_log
+df['r_popularity_rating'] = df.popularity_log / (df.rating + .1)
+df['r_popularity_ngenres'] = df.popularity / df.n_genres
+df['r_popularity_n_cast'] = df.popularity / (df.n_cast + 1)
+
+df['r_budget_totalVotes'] = df.budget / (df.totalVotes + 1)
+df['r_budget_runtime'] = df.budget / (df.runtime + 1)
+
 df['year_diff'] = df.year - np.min(df.year) + 1
+df['r_budget_year'] = df.budget / df.year_diff
+df['r_totalVotes_year'] = df.totalVotes_log / df.year_diff
+#df['r_totalVotes_year2'] = df.totalVotes / df.year_diff
+df['r_rating_year'] = df.rating / df.year
+df['r_rating_year2'] = df.rating / df.year_diff
 
-#df['md_year_budget'] = df.groupby('year')['budget'].transform('median')
-df['m_year_budget'] = df.groupby('year')['budget'].transform('mean')
+df['m_rating_totalVotes'] = df.groupby("rating")["totalVotes_log"].transform('mean')
 
 df['m_year_popularity'] = df.groupby('year')['popularity_log'].transform('mean')
-df['m_year_runtime'] = df.groupby('year')['runtime'].transform('mean')
-df['md_year_n_crew_log'] = df.groupby('year')['n_crew_log'].transform('median')
-df['md_year_n_cast_log'] = df.groupby('year')['n_cast_log'].transform('median')
+df['m_year_budget'] = df.groupby('year')['budget'].transform('mean')
+
+df['m_year_totalVotes_log'] = df.groupby("year")["totalVotes_log"].transform('mean')
+df['m_year_rating'] = df.groupby("year")["rating"].transform('mean')
+
+df['m_year_runtime'] = df.groupby('year')['runtime_m'].transform('mean')     #
+df['m_year_n_crew_log'] = df.groupby('year')['n_crew'].transform('mean')
+df['m_year_n_crew_log'] = df.groupby('year')['n_cast'].transform('mean')
+
+df['m_weekofday_budget'] = df.groupby('weekofday')['budget'].transform('mean')
+
+
+#df['md_ngenres_budget'] = df.groupby('n_genres')['budget'].transform('median')
 
 #df['r_popularity_year'] = df.popularity / df.year_diff
-df['r_budget_year'] = df.budget / df.year_diff
-#df['r_budget_year2'] = df.budget / (df.year_diff//10 + 1)
-
-# month / weekofday
-df['m_weekofday_budget'] = df.groupby('weekofday')['budget'].transform('mean')
 
 # budget
 #df['budget_ift'] = df.budget + df.budget*1.8/100*(2018 - df.year)
-df['r_budget_runtime'] = df.budget / (df.runtime + 1)
 #df['r_budget_popularity'] = df.budget / df.popularity
 
-# produce_country & produce_company
-#df['m_Ncnt_budget'] = df.groupby('n_prod_count')['budget'].transform('min')
-#df['r_popularity_Ncnt'] = df.popularity / (df.n_prod_count + 1)
-#df['md_Ncmp_budget'] = df.groupby('n_prod_comp')['budget'].transform('median')
-#df['r_popularity_Ncmp'] = df.popularity / (df.n_prod_comp + 1)
+df['cast_male'] = df.cast_male.fillna(0)
+df['crew_male'] = df.crew_male.fillna(0)
 
-# rating
-df['m_year_totalVotes'] = df.groupby("year")["totalVotes_log"].transform('mean')
-df['m_rating_totalVotes'] = df.groupby("rating")["totalVotes_log"].transform('mean')
-
-df['r_popularity_totalVotes'] = np.log1p(df['totalVotes']/df['popularity'])
-df['r_budget_totalVotes'] = df['budget']/(df['totalVotes'] + 1)
-
-#df['r_totalVotes_rating'] = df['totalVotes']/df['rating']
-df['r_budget_rating'] = df['budget']/(df['rating'] + .1)
-df['r_runtime_rating'] = df['runtime']/(df['rating'] + .1)
-
-df['r_totalVotes_year'] = df['totalVotes']/df['year']
-#df['r_rating_popularity'] = df['rating']/df['popularity']
+print("============The number of NAs============")
+print(df.isnull().sum()[df.isnull().sum() != 0])
 
 ###################
 # text data

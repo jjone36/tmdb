@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from sklearn.preprocessing import MultiLabelBinarizer, LabelEncoder
-from sklearn.decomposition import TruncatedSVD
+#from sklearn.decomposition import TruncatedSVD
 import operator
 
 # Dimension Reduction
