@@ -14,8 +14,9 @@ The metric used is the root-mean-squared error and the accuracy of the first bas
 <br>
 
 * **Project Date:** Apr - May, 2019
-* **Applied skills:** Data Preprocessing and Manipulation, Multi-class Encoding, Scraping data with TMDB API, Extensive Exploratory Data Analysis, Feature engineering, Cross Validation, Residual Weighted Boosting, Stacking Models, and Ensemble Learning.  
+* **Applied skills:** Data Preprocessing and Manipulation, Scraping data with TMDB API, Intensive Exploratory Data Analysis, Feature engineering, Cross Validation, Residual Weighted Boosting, Stacking Models, and Ensemble Learning.  
 
+<br>
 
 ## ***2. FlowChart***
 
