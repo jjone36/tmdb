@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 
 from sklearn.preprocessing import scale
+from imdb import IMDb
+ia = IMDb()
 
 dir = '../'
 # Import the all dataset
@@ -29,10 +31,23 @@ voting = pd.concat([tr2, te2], axis = 0)
 df = pd.merge(df, voting, how = 'left', on = 'imdb_id')
 df.reset_index(drop = True, inplace= True)
 
-# Fill NAs
-df['popularity2'] = df.popularity2.fillna(1)
-df['rating'] = df.rating.fillna(0)
-df['totalVotes'] = df.totalVotes.fillna(1)
+# Fill NAs in rating & totalVotes
+idx = df[df.rating.isnull()].index
+print("The number of missing values in ratings: ", len(idx))
+print("Filling...")
+
+for n, i in enumerate(idx):
+    num = df.imdb_id[i]
+    movie = ia.get_movie(num[2:])
+    df.loc[i, 'rating'] = movie['rating']
+    df.loc[i, 'totalVotes'] = movie['votes']
+
+    if n % 20 == 0:
+        print("======processed: %.2f"%(n/len(idx)))
+
+df['temp_'] = round(df.rating)
+df['temp_'] = df.groupby('temp_')['popularity'].transform('median')
+df.loc[idx, 'popularity2'] = df.temp_[idx]
 
 # The number of NAs
 df.isnull().sum()[df.isnull().sum() != 0]

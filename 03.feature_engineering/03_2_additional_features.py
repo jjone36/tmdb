@@ -96,7 +96,7 @@ df_all = pd.concat([df, df_genres, df_prod_count, df_prod_comp, df_langs, df_cre
 drop_feats = ['genres', 'production_companies', 'production_countries', 'spoken_languages', 'original_language',
               'id', 'imdb_id', 'runtime', 'revenue', 'revenue.1', 'popularity', 'popularity2', 'totalVotes',
               'release_date', 'year_diff', 'quarter', 'budget',
-              'n_cast', 'cast_gender', 'cast_female', 'cast_neutral',
+              'n_cast', 'cast_gender', 'cast_female', 'cast_neutral', 'temp_',
               'n_crew', 'n_crew_department', 'crew_department',  'crew_job', 'n_crew_job', 'crew_gender', 'crew_female', 'crew_neutral']
 
 df_all.drop(drop_feats, axis = 1, inplace = True)

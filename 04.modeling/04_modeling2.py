@@ -321,7 +321,7 @@ kfold_validate(X_tr, y, te, model_rf, 'ad')    # 1.8474
 
 
 
-final = meta_te.rd    # Final Submission
+final = (meta_te.lr + meta_te.el + meta_te.rd + meta_te.rf)/4    
 
 # Submission
 sub = pd.read_csv(dir + 'data/sample_submission.csv')
