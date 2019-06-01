@@ -1,4 +1,4 @@
-# TMBD Box Office Prediction
+# TMDB Box Office Prediction
 : *Kaggle competition predicting movie revenues*
 
 <br>
