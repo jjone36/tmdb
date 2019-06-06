@@ -9,7 +9,7 @@ My solution for the Kaggle competition, [TMDB Box Office Prediction](https://www
 
 ![page](https://github.com/jjone36/tmdb/blob/master/img.PNG)
 
-The metric used is the root-mean-squared error and the accuracy of the first baseline model is **2.1347** by a Elastic Net model. The final submission public LB score **1.7249**, Top 18% (242nd of 1400) and private LB score **1.----**. The best single model I've built during the competition was a CatBoost model (max_depth = 9, learning_rate = .05). The final prediction has made by stacking 3 layers with residual weighted boosting technique and ensembling.  
+The metric used is the root-mean-squared error and the accuracy of the first baseline model is **2.1347** by a Elastic Net model. The final submission public LB score **1.7249**, Top 18% (242nd of 1400). The best single model I've built during the competition was a CatBoost model (max_depth = 9, learning_rate = .05). The final prediction has made by stacking 3 layers with residual weighted boosting technique and ensembling.  
 
 <br>
 
